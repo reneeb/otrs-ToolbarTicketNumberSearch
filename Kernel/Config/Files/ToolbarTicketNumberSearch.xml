@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <otrs_config version="1.0" init="Config">
     <ConfigItem Name="Frontend::Output::FilterElementPost###ToolbarTicketNumberSearch" Required="0" Valid="1">
-        <Description Translatable="1">Add search field to ToolBar.</Description>
+        <Description Translatable="1">Adds a search field to the toolbar.</Description>
         <Group>ToolbarTicketNumberSearch</Group>
         <SubGroup>OutputFilter</SubGroup>
         <Setting>
