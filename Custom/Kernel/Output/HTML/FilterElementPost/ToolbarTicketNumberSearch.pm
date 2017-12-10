@@ -1,5 +1,5 @@
 # --
-# Copyright (C) 2015 - 2016 Perl-Services.de, http://www.perl-services.de/
+# Copyright (C) 2015 - 2017 Perl-Services.de, http://www.perl-services.de/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
 # the enclosed file COPYING for license information (AGPL). If you
@@ -11,13 +11,10 @@ package Kernel::Output::HTML::FilterElementPost::ToolbarTicketNumberSearch;
 use strict;
 use warnings;
 
-use List::Util qw(first);
-
 our @ObjectDependencies = qw(
     Kernel::Config
-    Kernel::System::Log
-    Kernel::System::DB
-    Kernel::System::User
+    Kernel::Output::HTML::Layout
+    Kernel::Language
 );
 
 
@@ -39,13 +36,13 @@ sub Run {
     # get template name
     my $Templatename = $Param{TemplateFile} || '';
     return 1 if !$Templatename;
-
-    return 1 if !first{ $Templatename eq $_ }keys %{ $Param{Templates} };
+    return 1 if !$Param{Templates}->{$Templatename};
 
     return 1 if ${ $Param{Data} } !~ m{<a [^>]+ id="LogoutButton"};
 
     my $LayoutObject   = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
     my $LanguageObject = $Kernel::OM->Get('Kernel::Language');
+    my $ConfigObject   = $Kernel::OM->Get('Kernel::Config');
 
     my $Baselink    = $LayoutObject->{Baselink};
     my $Description = $LanguageObject->Translate("TicketNumber") || 'TicketNumber';
@@ -61,16 +58,29 @@ sub Run {
         </li>
     ~;
 
-    # place the widget in the output
-    ${ $Param{Data} } =~ s{(
-        <ul \s* id="ToolBar"> .*?
-    ) (
-        (?: (?: <li> .*? </li> \s* ){2} )?
-        </ul>
-    )}{$1 $Form $2 }xsm;
+    my $Position = $ConfigObject->Get('ToolbarTicketNumberSearch::Position') // -3;
+    if ( $Position < 0 ) {
+        $Position++;
+        $Position *= -1;
 
+        # place the widget in the output
+        ${ $Param{Data} } =~ s{(
+            <ul \s* id="ToolBar"> .*?
+        ) (
+            (?: (?: <li> .*? </li> \s* ){$Position} )?
+            </ul>
+        )}{$1 $Form $2 }xsm;
+    }
+    else {
 
-    return ${ $Param{Data} };
+        # place the widget in the output
+        ${ $Param{Data} } =~ s{
+            <ul \s* id="ToolBar"> \s+
+                (?: <li (?:[^>]+)?> .*? </li> \s* ){$Position} \K
+        }{$Form}xsm;
+    }
+
+    return 1;
 }
 
 1;
