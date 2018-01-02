@@ -47,6 +47,15 @@ sub Run {
     my $Baselink    = $LayoutObject->{Baselink};
     my $Description = $LanguageObject->Translate("TicketNumber") || 'TicketNumber';
 
+    my $Button = '';
+    if ( $ConfigObject->Get('ToolbarTicketNumberSearch::ShowButtonToOpenNewWindow') ) {
+        $Button = q~
+            <button onclick="$('#SearchTicketNumber').attr('target','_blank');">
+                <span class="fa fa-external-link"></span>
+            </button>
+        ~;
+    }
+
     my $Form = qq~
         <li class="Extended SearchFulltext" style="margin-left: 10px">
             <form action="$Baselink" method="post" name="SearchTicketNumber">
@@ -54,6 +63,7 @@ sub Run {
                 <input type="hidden" name="Subaction" value="Search"/>
                 <input type="hidden" name="CheckTicketNumberAndRedirect" value="1"/>
                 <input type="text" size="25" name="TicketNumber" id="TicketNumber" placeholder="$Description" title="$Description"/>
+                $Button
             </form>
         </li>
     ~;
